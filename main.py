@@ -1,8 +1,10 @@
 from fastapi import FastAPI
-from database import create_tables
+from database import get_db
 from routers import routers
-import os
-print("Current working directory:", os.getcwd())
+from dotenv import load_dotenv
+
+# Cargar las variables de entorno
+load_dotenv()
 
 # Crear la aplicación FastAPI
 app = FastAPI(
@@ -10,9 +12,6 @@ app = FastAPI(
     description="Una API simple para gestionar tareas y usuarios.",
     version="1.0.0",
 )
-
-# Crear tablas en la base de datos al iniciar
-create_tables()
 
 # Incluir todos los routers dinámicamente
 for router in routers:

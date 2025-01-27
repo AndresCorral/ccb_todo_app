@@ -1,25 +1,22 @@
+import os
 from sqlmodel import SQLModel, create_engine, Session
 from typing import Generator
+from dotenv import load_dotenv
 
-# Configuración de la base de datos
-DATABASE_URL = "sqlite:///todo.db"  # SQLite en el mismo directorio
+# Cargar las variables de entorno desde el archivo .env
+load_dotenv()
+
+# Leer la URL de conexión desde la variable de entorno
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL no está definida en las variables de entorno")
 
 # Crear el motor de la base de datos
-engine = create_engine(DATABASE_URL, echo=True)  # echo=True para ver logs de SQL
-
-# Crear tablas en la base de datos
-def create_tables():
-    """
-    Crea todas las tablas definidas en los modelos SQLModel.
-    """
-    SQLModel.metadata.create_all(engine)
+engine = create_engine(DATABASE_URL, echo=True)
 
 # Dependencia para obtener una sesión de la base de datos
 def get_db() -> Generator[Session, None, None]:
-    """
-    Proporciona una sesión de la base de datos para cada solicitud.
-    Cierra la sesión automáticamente después de su uso.
-    """
     db = Session(engine)
     try:
         yield db
