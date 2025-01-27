@@ -6,6 +6,8 @@ from ..database import get_db
 from ..models import Task, TaskCreate, TaskStatus, User, TaskUpdate, TaskResponse
 from ..crud import create_task, get_task, update_task, update_task_status, delete_task, get_tasks_by_user
 from ..schemas import TaskResponse
+from ..enums import TaskStatus
+
 
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
