@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 from typing import List
 from uuid import UUID
@@ -7,6 +7,7 @@ from ..auth import hash_password
 from ..database import get_db
 from ..models import User, UserCreate, UserUpdate
 from ..crud import create_user, get_user, get_users, update_user, delete_user
+from ..schemas import UserResponse
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -35,12 +36,13 @@ def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
             detail="Error al crear el usuario. Por favor, inténtalo nuevamente."
         )
 
-@router.get("/", response_model=List[User])
+@router.get("/", response_model=List[UserResponse])  # Usa UserResponse como modelo de respuesta
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
     Obtiene una lista de usuarios.
     """
-    return get_users(db, skip=skip, limit=limit)
+    users = db.exec(select(User).offset(skip).limit(limit)).all()
+    return users
 
 @router.get("/{user_id}", response_model=User)
 def read_user(user_id: UUID, db: Session = Depends(get_db)):

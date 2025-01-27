@@ -7,17 +7,16 @@ from ..models import Task, TaskCreate, User, TaskUpdate
 from ..crud import create_task, get_task, update_task, update_task_status, delete_task, get_tasks_by_user
 from ..schemas import TaskResponse
 from ..enums import TaskStatus
+import logging
 
-
+logger = logging.getLogger("tasks_logger")  # Nombre del logger específico para este archivo
+logger.setLevel(logging.DEBUG)  # Cambia el nivel según sea necesario
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 @router.get("/user/{user_id}", response_model=List[TaskResponse])
 def read_tasks_by_user(user_id: UUID, db: Session = Depends(get_db)):
-
-    """
-    Obtiene todas las tareas de un usuario específico.
-    """
+    logger.info(f"Recibida solicitud para obtener tareas del usuario: {user_id}")
     tasks = get_tasks_by_user(db, user_id)
     if not tasks:
         raise HTTPException(
@@ -25,6 +24,30 @@ def read_tasks_by_user(user_id: UUID, db: Session = Depends(get_db)):
             detail="No se encontraron tareas para el usuario especificado"
         )
     return tasks
+    logger.info(f"Recibida solicitud para obtener tareas del usuario: {user_id}")
+
+    # Obtener las tareas desde la base de datos
+    tasks = get_tasks_by_user(db, user_id)
+    if not tasks:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontraron tareas para el usuario especificado"
+        )
+    
+    logger.info(f"Se encontraron {len(tasks)} tareas para el usuario: {user_id}")
+
+    # Convertir a un JSON plano
+    return [
+        {
+            "id": str(task.id),
+            "task_name": task.task_name,
+            "task_description": task.task_description,
+            "task_status": task.task_status.value,  # Para convertir a un valor serializable
+            "user_id": str(task.user_id),
+        }
+        for task in tasks
+    ]
+
 
 @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_new_task(task: TaskCreate, db: Session = Depends(get_db)):

@@ -1,10 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import logging
+import time
 from .database import get_db
 from .routers import routers
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+import logging
 
+logger = logging.getLogger("tasks_logger")  # Nombre del logger específico para este archivo
+logger.setLevel(logging.DEBUG)  # Cambia el nivel según sea necesario
 
 
 
@@ -51,4 +55,18 @@ logging.basicConfig(
 
 logger = logging.getLogger("fastapi_app")
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    
+    try:
+        response = await call_next(request)
+    except Exception as e:
+        logger.error(f"Error en la solicitud: {e}", exc_info=True)
+        raise
 
+    process_time = time.time() - start_time
+    logger.info(
+        f"{request.method} {request.url} - {response.status_code} - {process_time:.2f}s"
+    )
+    return response

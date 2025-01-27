@@ -103,11 +103,9 @@ def get_tasks(db: Session, skip: int = 0, limit: int = 100) -> List[Task]:
     return db.exec(statement).all()
 
 def get_tasks_by_user(db: Session, user_id: UUID) -> List[Task]:
-    """
-    Obtiene todas las tareas de un usuario específico.
-    """
     statement = select(Task).where(Task.user_id == user_id)
-    return db.exec(statement).all()
+    tasks = db.exec(statement).scalars().all()  # .scalars() devuelve instancias de Task
+    return tasks
 
 def update_task(db: Session, task_id: UUID, updated_task: TaskUpdate) -> Optional[Task]:
     """

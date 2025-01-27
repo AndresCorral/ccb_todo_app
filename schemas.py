@@ -11,4 +11,12 @@ class TaskResponse(BaseModel):
     user_id: UUID
 
     class Config:
-        orm_mode = True
+        from_attributes=True
+
+class UserResponse(BaseModel):
+    id: UUID
+    name: str
+    correo: str
+
+    class Config:
+        from_attributes=True
