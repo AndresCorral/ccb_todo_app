@@ -1,4 +1,6 @@
 from sqlmodel import Session, select
+from sqlalchemy.future import select
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from uuid import UUID
 from .models import User, Task, UserCreate, TaskCreate, TaskStatus, UserUpdate, TaskUpdate
@@ -7,14 +9,19 @@ from .models import User, Task, UserCreate, TaskCreate, TaskStatus, UserUpdate, 
 
 def create_user(db: Session, user: UserCreate):
     # Verificar si el correo ya existe
-    existing_user = db.query(User).filter(User.correo == user.correo).first()
-    if existing_user:
+    stmt = select(User).where(User.correo == user.correo)
+    result = db.exec(stmt).scalar_one_or_none()
+    if result:
         raise ValueError(f"El correo {user.correo} ya está registrado.")
 
     # Crear un nuevo usuario si no existe
     db_user = User(**user.dict())
     db.add(db_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("Error al guardar el usuario. Revisa los datos proporcionados.")
     db.refresh(db_user)
     return db_user
 
