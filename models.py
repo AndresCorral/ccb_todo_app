@@ -2,7 +2,8 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
 from uuid import UUID, uuid4
 from enum import Enum
-from pydantic import EmailStr
+from pydantic import EmailStr, BaseModel
+from .models import TaskStatus
 
 # Enumeración para los estados de las tareas
 class TaskStatus(str, Enum):
@@ -56,3 +57,13 @@ class Task(SQLModel, table=True):
     # Clave foránea para el usuario
     user_id: UUID = Field(foreign_key="user.id")
     user: User = Relationship(back_populates="tasks")
+
+class TaskResponse(BaseModel):
+    id: UUID
+    task_name: str
+    task_description: Optional[str]
+    task_status: TaskStatus
+    user_id: UUID
+
+    class Config:
+        orm_mode = True

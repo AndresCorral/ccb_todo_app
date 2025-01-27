@@ -3,13 +3,14 @@ from sqlmodel import Session, select
 from typing import List
 from uuid import UUID
 from ..database import get_db
-from ..models import Task, TaskCreate, TaskStatus, User, TaskUpdate
+from ..models import Task, TaskCreate, TaskStatus, User, TaskUpdate, TaskResponse
 from ..crud import create_task, get_task, update_task, update_task_status, delete_task, get_tasks_by_user
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
-@router.get("/user/{user_id}", response_model=List[Task])
+@router.get("/user/{user_id}", response_model=List[TaskResponse])
 def read_tasks_by_user(user_id: UUID, db: Session = Depends(get_db)):
+
     """
     Obtiene todas las tareas de un usuario específico.
     """
