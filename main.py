@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 
 
+
+
 # Cargar las variables de entorno
 load_dotenv()
 
@@ -48,3 +50,5 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("fastapi_app")
+
+

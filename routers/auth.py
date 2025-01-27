@@ -27,4 +27,10 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
     
     # Genera el token de acceso
     token = create_access_token(data={"sub": user.correo})
-    return {"access_token": token, "token_type": "bearer"}
+    
+    # Retorna el token y el id del usuario
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user_id": str(user.id)  # Convertir UUID a string
+    }

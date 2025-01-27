@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlmodel import Session, select
 from typing import List
 from uuid import UUID
@@ -60,7 +60,7 @@ def update_existing_task(task_id: UUID, updated_task: TaskUpdate, db: Session = 
     return task
 
 @router.patch("/{task_id}/status", response_model=Task)
-def change_task_status(task_id: UUID, new_status: TaskStatus, db: Session = Depends(get_db)):
+def change_task_status(task_id: UUID, new_status: TaskStatus = Body(...), db: Session = Depends(get_db)):
     """
     Cambia el estado de una tarea.
     """
