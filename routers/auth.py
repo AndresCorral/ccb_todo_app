@@ -14,17 +14,17 @@ class LoginRequest(BaseModel):
 
 @router.post("/login")
 def login(credentials: LoginRequest, db: Session = Depends(get_db)):
-    """
-    Inicia sesión con correo y contraseña.
-    """
     # Busca al usuario en la base de datos
     user = db.query(User).filter(User.correo == credentials.correo).first()
+    print(f"Usuario encontrado: {user}")  # <-- Debug
     if not user or not verify_password(credentials.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales incorrectas"
         )
     
+    print(f"ID del usuario: {user.id}")  # <-- Debug
+
     # Genera el token de acceso
     token = create_access_token(data={"sub": user.correo})
     
