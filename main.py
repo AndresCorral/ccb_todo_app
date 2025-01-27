@@ -2,7 +2,15 @@ from fastapi import FastAPI
 from .database import get_db
 from .routers import routers
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://*.netlify.app"],  # Cambia "*" por la lista de dominios permitidos (por ejemplo: ["http://localhost:3000"])
+    allow_credentials=True,
+    allow_methods=["*"],  # Métodos permitidos: GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],  # Encabezados permitidos: Authorization, Content-Type, etc.
+)
 # Cargar las variables de entorno
 load_dotenv()
 
