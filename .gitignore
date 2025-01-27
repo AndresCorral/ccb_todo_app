@@ -1,0 +1,15 @@
+# Archivos de configuración sensibles
+.env
+
+# Bases de datos
+*.db
+
+# Archivos de compilación y caché
+__pycache__/
+*.pyc
+
+# Directorios virtualenv
+.venv/
+env/
+
+.python-version
