@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..database import get_db
@@ -6,14 +7,24 @@ from ..models import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+# Modelo Pydantic para los datos de inicio de sesión
+class LoginRequest(BaseModel):
+    correo: str
+    password: str
+
 @router.post("/login")
-def login(correo: str, password: str, db: Session = Depends(get_db)):
+def login(credentials: LoginRequest, db: Session = Depends(get_db)):
     """
     Inicia sesión con correo y contraseña.
     """
-    user = db.query(User).filter(User.correo == correo).first()
-    if not user or not verify_password(password, user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales incorrectas")
+    # Busca al usuario en la base de datos
+    user = db.query(User).filter(User.correo == credentials.correo).first()
+    if not user or not verify_password(credentials.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas"
+        )
     
+    # Genera el token de acceso
     token = create_access_token(data={"sub": user.correo})
     return {"access_token": token, "token_type": "bearer"}
