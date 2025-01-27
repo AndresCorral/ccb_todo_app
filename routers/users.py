@@ -3,9 +3,11 @@ from sqlmodel import Session
 from sqlalchemy.exc import IntegrityError
 from typing import List
 from uuid import UUID
+from ..auth import hash_password
 from ..database import get_db
 from ..models import User, UserCreate, UserUpdate
 from ..crud import create_user, get_user, get_users, update_user, delete_user
+
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -15,6 +17,9 @@ def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     Crea un nuevo usuario.
     """
     try:
+        # Hashear la contraseña antes de guardarla
+        user.password = hash_password(user.password)
+        
         return create_user(db, user)
     except IntegrityError as e:
         db.rollback()  # Revertir la transacción si ocurre un error
@@ -74,3 +79,5 @@ def delete_existing_user(user_id: UUID, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user cannot be deleted because they have associated tasks. Please delete all tasks before removing the user."
         )
+    
+
