@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import logging
 from .database import get_db
 from .routers import routers
 from dotenv import load_dotenv
@@ -37,3 +38,13 @@ def read_root():
             "users": "/users",
         },
     }
+# Configuración del logger
+logging.basicConfig(
+    level=logging.DEBUG,  # Cambia a DEBUG para obtener más detalles
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler()  # Los logs van a la consola, visibles en Railway
+    ],
+)
+
+logger = logging.getLogger("fastapi_app")
