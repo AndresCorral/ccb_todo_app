@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from typing import List
 from uuid import UUID
 from ..database import get_db
-from ..models import Task, TaskCreate, TaskStatus, User, TaskUpdate, TaskResponse
+from ..models import Task, TaskCreate, User, TaskUpdate
 from ..crud import create_task, get_task, update_task, update_task_status, delete_task, get_tasks_by_user
 from ..schemas import TaskResponse
 from ..enums import TaskStatus
@@ -26,7 +26,7 @@ def read_tasks_by_user(user_id: UUID, db: Session = Depends(get_db)):
         )
     return tasks
 
-@router.post("/", response_model=Task, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_new_task(task: TaskCreate, db: Session = Depends(get_db)):
     """
     Crea una nueva tarea.
