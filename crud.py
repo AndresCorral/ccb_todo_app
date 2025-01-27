@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from typing import List, Optional
 from uuid import UUID
-from models import User, Task, UserCreate, TaskCreate, TaskStatus, UserUpdate, TaskUpdate
+from .models import User, Task, UserCreate, TaskCreate, TaskStatus, UserUpdate, TaskUpdate
 
 # Operaciones CRUD para Usuarios
 

@@ -3,9 +3,9 @@ from sqlmodel import Session
 from sqlalchemy.exc import IntegrityError
 from typing import List
 from uuid import UUID
-from database import get_db
-from models import User, UserCreate, UserUpdate
-from crud import create_user, get_user, get_users, update_user, delete_user
+from ..database import get_db
+from ..models import User, UserCreate, UserUpdate
+from ..crud import create_user, get_user, get_users, update_user, delete_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 

@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import List
 from uuid import UUID
-from database import get_db
-from models import Task, TaskCreate, TaskStatus, User, TaskUpdate
-from crud import create_task, get_task, update_task, update_task_status, delete_task, get_tasks_by_user
+from ..database import get_db
+from ..models import Task, TaskCreate, TaskStatus, User, TaskUpdate
+from ..crud import create_task, get_task, update_task, update_task_status, delete_task, get_tasks_by_user
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 

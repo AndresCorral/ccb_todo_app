@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from database import get_db
-from routers import routers
+from .database import get_db
+from .routers import routers
 from dotenv import load_dotenv
 
 # Cargar las variables de entorno
