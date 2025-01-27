@@ -5,11 +5,14 @@ from .models import User, Task, UserCreate, TaskCreate, TaskStatus, UserUpdate, 
 
 # Operaciones CRUD para Usuarios
 
-def create_user(db: Session, user: UserCreate) -> User:
-    """
-    Crea un nuevo usuario en la base de datos.
-    """
-    db_user = User(**user.model_dump())  # Usar model_dump() en lugar de dict()
+def create_user(db: Session, user: UserCreate):
+    # Verificar si el correo ya existe
+    existing_user = db.query(User).filter(User.correo == user.correo).first()
+    if existing_user:
+        raise ValueError(f"El correo {user.correo} ya está registrado.")
+
+    # Crear un nuevo usuario si no existe
+    db_user = User(**user.dict())
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

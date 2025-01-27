@@ -1,79 +1,76 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import Session
+from sqlalchemy.exc import IntegrityError
 from typing import List
 from uuid import UUID
 from ..database import get_db
-from ..models import Task, TaskCreate, TaskStatus, User, TaskUpdate
-from ..crud import create_task, get_task, update_task, update_task_status, delete_task, get_tasks_by_user
+from ..models import User, UserCreate, UserUpdate
+from ..crud import create_user, get_user, get_users, update_user, delete_user
 
-router = APIRouter(prefix="/tasks", tags=["tasks"])
+router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("/user/{user_id}", response_model=List[Task])
-def read_tasks_by_user(user_id: UUID, db: Session = Depends(get_db)):
+@router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
+def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     """
-    Obtiene todas las tareas de un usuario específico.
+    Crea un nuevo usuario.
     """
-    tasks = get_tasks_by_user(db, user_id)
-    if not tasks:
+    try:
+        return create_user(db, user)
+    except IntegrityError as e:
+        db.rollback()  # Revertir la transacción si ocurre un error
+        # Verificar si el error es por correo duplicado
+        if "ix_user_correo" in str(e.orig):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"El correo {user.correo} ya está registrado."
+            )
+        # Para otros errores de integridad, relanzar un error genérico
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No se encontraron tareas para el usuario especificado"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al crear el usuario. Por favor, inténtalo nuevamente."
         )
-    return tasks
 
-@router.post("/", response_model=Task, status_code=status.HTTP_201_CREATED)
-def create_new_task(task: TaskCreate, db: Session = Depends(get_db)):
+@router.get("/", response_model=List[User])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
-    Crea una nueva tarea.
+    Obtiene una lista de usuarios.
     """
-    # Verifica si el usuario existe
-    user = db.exec(select(User).where(User.id == task.user_id)).first()
+    return get_users(db, skip=skip, limit=limit)
+
+@router.get("/{user_id}", response_model=User)
+def read_user(user_id: UUID, db: Session = Depends(get_db)):
+    """
+    Obtiene un usuario por su ID.
+    """
+    user = get_user(db, user_id)
     if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    return user
+
+@router.patch("/{user_id}", response_model=User)
+def update_existing_user(user_id: UUID, updated_user: UserUpdate, db: Session = Depends(get_db)):
+    """
+    Actualiza un usuario existente.
+    """
+    user = update_user(db, user_id, updated_user)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    return user
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_existing_user(user_id: UUID, db: Session = Depends(get_db)):
+    """
+    Elimina un usuario por su ID, pero verifica si tiene tareas asociadas.
+    """
+    try:
+        if not delete_user(db, user_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found."
+            )
+    except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El usuario especificado no existe"
+            detail="The user cannot be deleted because they have associated tasks. Please delete all tasks before removing the user."
         )
-
-    # Crea la tarea
-    db_task = create_task(db, task)
-    return db_task
-
-
-@router.get("/{task_id}", response_model=Task)
-def read_task(task_id: UUID, db: Session = Depends(get_db)):
-    """
-    Obtiene una tarea por su ID.
-    """
-    task = get_task(db, task_id)
-    if not task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
-    return task
-
-@router.patch("/{task_id}", response_model=Task)
-def update_existing_task(task_id: UUID, updated_task: TaskUpdate, db: Session = Depends(get_db)):
-    """
-    Actualiza una tarea existente.
-    """
-    task = update_task(db, task_id, updated_task)
-    if not task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
-    return task
-
-@router.patch("/{task_id}/status", response_model=Task)
-def change_task_status(task_id: UUID, new_status: TaskStatus, db: Session = Depends(get_db)):
-    """
-    Cambia el estado de una tarea.
-    """
-    task = update_task_status(db, task_id, new_status)
-    if not task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
-    return task
-
-@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_existing_task(task_id: UUID, db: Session = Depends(get_db)):
-    """
-    Elimina una tarea por su ID.
-    """
-    if not delete_task(db, task_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
-    return None
