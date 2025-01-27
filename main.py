@@ -18,10 +18,10 @@ app = FastAPI(
 # Incluir todos los routers dinámicamente
 for router in routers:
     app.include_router(router)
-    
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://*.netlify.app"],  # Cambia "*" por la lista de dominios permitidos (por ejemplo: ["http://localhost:3000"])
+    allow_origins=["https://moonlit-bombolone-d444fb.netlify.app"],  # Cambia "*" por la lista de dominios permitidos (por ejemplo: ["http://localhost:3000"])
     allow_credentials=True,
     allow_methods=["*"],  # Métodos permitidos: GET, POST, PUT, DELETE, etc.
     allow_headers=["*"],  # Encabezados permitidos: Authorization, Content-Type, etc.
