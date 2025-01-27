@@ -22,10 +22,10 @@ for router in routers:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://ccbtodofront.netlify.app/login"],  # Cambia "*" por la lista de dominios permitidos (por ejemplo: ["http://localhost:3000"])
+    allow_origins=["https://ccbtodofront.netlify.app"],
     allow_credentials=True,
-    allow_methods=["*"],  # Métodos permitidos: GET, POST, PUT, DELETE, etc.
-    allow_headers=["*"],  # Encabezados permitidos: Authorization, Content-Type, etc.
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # Ruta de inicio
