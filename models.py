@@ -51,3 +51,5 @@ class Task(SQLModel, table=True):
     user_id: UUID = Field(foreign_key="user.id")
     user: User = Relationship(back_populates="tasks")
 
+class TaskStatusUpdate(SQLModel):
+    task_status: TaskStatus

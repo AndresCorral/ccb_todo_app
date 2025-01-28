@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from typing import List
 from uuid import UUID
 from ..database import get_db
-from ..models import Task, TaskCreate, User, TaskUpdate
+from ..models import Task, TaskCreate, User, TaskUpdate, TaskStatusUpdate
 from ..crud import create_task, get_task, update_task, update_task_status, delete_task, get_tasks_by_user
 from ..schemas import TaskResponse
 from ..enums import TaskStatus
@@ -65,25 +65,22 @@ def update_existing_task(task_id: UUID, updated_task: TaskUpdate, db: Session = 
     return task
 
 @router.patch("/{task_id}/status", response_model=Task)
-def change_task_status(task_id: UUID, new_status: TaskStatus = Body(...), db: Session = Depends(get_db)):
+def change_task_status(
+    task_id: UUID,
+    status_update: TaskStatusUpdate,  # Usar el nuevo modelo
+    db: Session = Depends(get_db)
+):
     """
     Cambia el estado de una tarea.
     """
-    logger.error(f"Recibida solicitud PATCH para task_id: {task_id}")
-    logger.info(f"Nuevo estado recibido: {new_status}")
-
-    try:
-        task = update_task_status(db, task_id, new_status)
-        if not task:
-            logger.warning(f"Tarea no encontrada con task_id: {task_id}")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
-
-        logger.info(f"Estado de la tarea actualizado correctamente: {task}")
-        return task
-
-    except Exception as e:
-        logger.error(f"Error al actualizar el estado de la tarea: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
+    new_status = status_update.task_status
+    task = update_task_status(db, task_id, new_status)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tarea no encontrada"
+        )
+    return task
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_existing_task(task_id: UUID, db: Session = Depends(get_db)):

@@ -112,7 +112,7 @@ def update_task(db: Session, task_id: UUID, updated_task: TaskUpdate) -> Optiona
     Actualiza una tarea existente.
     """
     statement = select(Task).where(Task.id == task_id)
-    task = db.exec(statement).first()
+    task = db.exec(statement).scalar_one_or_none()
     if not task:
         return None
 
@@ -129,7 +129,7 @@ def update_task_status(db: Session, task_id: UUID, new_status: TaskStatus) -> Op
     Cambia el estado de una tarea.
     """
     statement = select(Task).where(Task.id == task_id)
-    task = db.exec(statement).first()
+    task = db.exec(statement).scalar_one_or_none()
     if not task:
         return None
 
