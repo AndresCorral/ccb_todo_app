@@ -9,8 +9,8 @@ from ..schemas import TaskResponse
 from ..enums import TaskStatus
 import logging
 
-logger = logging.getLogger("tasks_logger")  # Nombre del logger específico para este archivo
-logger.setLevel(logging.DEBUG)  # Cambia el nivel según sea necesario
+# Obtén el logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -24,29 +24,6 @@ def read_tasks_by_user(user_id: UUID, db: Session = Depends(get_db)):
             detail="No se encontraron tareas para el usuario especificado"
         )
     return tasks
-    logger.info(f"Recibida solicitud para obtener tareas del usuario: {user_id}")
-
-    # Obtener las tareas desde la base de datos
-    tasks = get_tasks_by_user(db, user_id)
-    if not tasks:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No se encontraron tareas para el usuario especificado"
-        )
-    
-    logger.info(f"Se encontraron {len(tasks)} tareas para el usuario: {user_id}")
-
-    # Convertir a un JSON plano
-    return [
-        {
-            "id": str(task.id),
-            "task_name": task.task_name,
-            "task_description": task.task_description,
-            "task_status": task.task_status.value,  # Para convertir a un valor serializable
-            "user_id": str(task.user_id),
-        }
-        for task in tasks
-    ]
 
 
 @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
@@ -92,10 +69,21 @@ def change_task_status(task_id: UUID, new_status: TaskStatus = Body(...), db: Se
     """
     Cambia el estado de una tarea.
     """
-    task = update_task_status(db, task_id, new_status)
-    if not task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
-    return task
+    logger.error(f"Recibida solicitud PATCH para task_id: {task_id}")
+    logger.info(f"Nuevo estado recibido: {new_status}")
+
+    try:
+        task = update_task_status(db, task_id, new_status)
+        if not task:
+            logger.warning(f"Tarea no encontrada con task_id: {task_id}")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
+
+        logger.info(f"Estado de la tarea actualizado correctamente: {task}")
+        return task
+
+    except Exception as e:
+        logger.error(f"Error al actualizar el estado de la tarea: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno del servidor")
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_existing_task(task_id: UUID, db: Session = Depends(get_db)):

@@ -142,8 +142,7 @@ def delete_task(db: Session, task_id: UUID) -> bool:
     """
     Elimina una tarea por su ID.
     """
-    statement = select(Task).where(Task.id == task_id)
-    task = db.exec(statement).first()
+    task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         return False
 

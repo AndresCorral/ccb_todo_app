@@ -1,16 +1,21 @@
-from fastapi import FastAPI, Request
 import logging
+from fastapi import FastAPI, Request
 import time
 from .database import get_db
 from .routers import routers
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
-import logging
 
-logger = logging.getLogger("tasks_logger")  # Nombre del logger específico para este archivo
-logger.setLevel(logging.DEBUG)  # Cambia el nivel según sea necesario
+# Configura el logger
+logging.basicConfig(
+    level=logging.DEBUG,  # Nivel de logging (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Formato del mensaje
+    handlers=[
+        logging.StreamHandler()  # Los logs se imprimen en la consola
+    ],
+)
 
-
+logger = logging.getLogger(__name__)  # Crea un logger para este módulo
 
 # Cargar las variables de entorno
 load_dotenv()
@@ -30,7 +35,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://ccbtodofront.netlify.app"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -38,23 +43,14 @@ app.add_middleware(
 @app.get("/", tags=["Inicio"])
 def read_root():
     return {
-        "message": "Bienvenido a la API de TODO",
+        "message": "Bienvenido a la API de ToDo",
         "endpoints": {
             "tasks": "/tasks",
             "users": "/users",
         },
     }
-# Configuración del logger
-logging.basicConfig(
-    level=logging.DEBUG,  # Cambia a DEBUG para obtener más detalles
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler()  # Los logs van a la consola, visibles en Railway
-    ],
-)
 
-logger = logging.getLogger("fastapi_app")
-
+# Middleware para loggear solicitudes
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
