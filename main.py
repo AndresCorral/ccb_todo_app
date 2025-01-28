@@ -1,7 +1,6 @@
 import logging
 from fastapi import FastAPI, Request
 import time
-from .database import get_db
 from .routers import routers
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
