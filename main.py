@@ -32,10 +32,7 @@ for router in routers:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://pavianventure.com/",
-                "https://ccbtodofront.netlify.app", 
-                "http://localhost:8000", 
-                "https://todoapp-register.flutterflow.app"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
